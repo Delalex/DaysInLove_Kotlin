@@ -4,6 +4,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("C:\\Users\\teamd\\Desktop\\Кодинг\\Ключи\\delalex.keystore")
+            storePassword = "p377033122"
+            keyAlias = "Delalex"
+            keyPassword = "p377033122"
+        }
+    }
     namespace = "com.example.daysinlove"
     compileSdk = 34
 
