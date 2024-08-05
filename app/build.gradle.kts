@@ -8,9 +8,9 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.daysinlove"
+        applicationId = "com.delalex.daysinlove"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 27
         versionCode = 1
         versionName = "1.0"
 

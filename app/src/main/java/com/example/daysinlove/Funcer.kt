@@ -1,11 +1,15 @@
 package com.example.daysinlove
 
+import android.content.Context
 import android.os.Build
+import android.os.VibrationEffect
 import androidx.annotation.RequiresApi
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Date
+import android.os.Vibrator
+import android.os.VibratorManager
 
 class Funcer {
     companion object {
