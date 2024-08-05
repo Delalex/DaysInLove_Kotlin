@@ -1,1 +1,1 @@
-# DIL_Kotlin
+# DaysInLove - Простой проект на Kotlin, ставший сложным
