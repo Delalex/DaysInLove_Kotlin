@@ -12,13 +12,35 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 class CounterActivity : AppCompatActivity() {
     override fun onBackPressed() {
+        super.onBackPressed()
     }
+
+    override fun onResume() {
+        super.onResume()
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun hideSystemUI() {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowInsetsControllerCompat(window,
+                window.decorView.findViewById(android.R.id.content)).let { controller ->
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+
+                // When the screen is swiped up at the bottom
+                // of the application, the navigationBar shall
+                // appear for some time
+                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+        hideSystemUI()
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +54,20 @@ class CounterActivity : AppCompatActivity() {
         // ON READY
 
         // HIDE NAV BAR
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun hideSystemUI() {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowInsetsControllerCompat(window,
+                window.decorView.findViewById(android.R.id.content)).let { controller ->
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+
+                // When the screen is swiped up at the bottom
+                // of the application, the navigationBar shall
+                // appear for some time
+                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+        hideSystemUI()
 
         // list all widgets
         val labelDatesWidget = findViewById<TextView>(R.id.labelDates)

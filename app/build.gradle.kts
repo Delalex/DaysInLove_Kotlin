@@ -19,8 +19,8 @@ android {
         applicationId = "com.delalex.daysinlove"
         minSdk = 24
         targetSdk = 33
-        versionCode = 2
-        versionName = "1.5"
+        versionCode = 3
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

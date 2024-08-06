@@ -10,10 +10,32 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.transition.Visibility
 import java.security.AccessController.getContext
 
 class MainActivity : AppCompatActivity() {
+
+    override fun onResume() {
+        super.onResume()
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun hideSystemUI() {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowInsetsControllerCompat(window,
+                window.decorView.findViewById(android.R.id.content)).let { controller ->
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+
+                // When the screen is swiped up at the bottom
+                // of the application, the navigationBar shall
+                // appear for some time
+                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+        hideSystemUI()
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +53,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         // HIDE NAV BAR
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun hideSystemUI() {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowInsetsControllerCompat(window,
+                window.decorView.findViewById(android.R.id.content)).let { controller ->
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+
+                // When the screen is swiped up at the bottom
+                // of the application, the navigationBar shall
+                // appear for some time
+                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+        hideSystemUI()
 
         // WIDGET LIST
         val done_btn = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.btnDone)

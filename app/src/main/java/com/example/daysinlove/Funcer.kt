@@ -34,5 +34,6 @@ class Funcer {
             val currentDate = data_format.format(Date())
             return currentDate.toString()
         }
+
     }
 }
