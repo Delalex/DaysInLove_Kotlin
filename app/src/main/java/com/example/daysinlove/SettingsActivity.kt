@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.CalendarView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.transition.Visibility
 import java.security.AccessController.getContext
 
 class MainActivity : AppCompatActivity() {
@@ -28,6 +30,9 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
+        // HIDE NAV BAR
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+
         // WIDGET LIST
         val done_btn = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.btnDone)
         val calendarView = findViewById<CalendarView>(R.id.calendarView)
@@ -42,8 +47,6 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("month", month)
             editor.putInt("year", year)
             editor.apply()
-
-            Toast.makeText(this, "Selected date: " + msg, Toast.LENGTH_SHORT).show()
         }
 
         // DONE BUTTON HANDLING

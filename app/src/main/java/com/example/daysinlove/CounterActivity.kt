@@ -3,6 +3,7 @@ package com.example.daysinlove
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -29,6 +30,10 @@ class CounterActivity : AppCompatActivity() {
             insets
         }
         // ON READY
+
+        // HIDE NAV BAR
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+
         // list all widgets
         val labelDatesWidget = findViewById<TextView>(R.id.labelDates)
         val labelDaysTogetherWidget = findViewById<TextView>(R.id.labelDaysTogether)
