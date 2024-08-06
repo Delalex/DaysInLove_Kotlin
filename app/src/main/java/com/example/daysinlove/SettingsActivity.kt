@@ -74,8 +74,6 @@ class MainActivity : AppCompatActivity() {
 
         // CALENDAR REWORK
         calendarView.setOnDateChangeListener{calendarView, year, month, dayOfMonth ->
-            val msg = "Selected date: " + dayOfMonth.toString()
-
             val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
             val editor = sharedPreferences.edit()
             editor.putInt("day", dayOfMonth)
