@@ -15,6 +15,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.transition.Visibility
 import java.security.AccessController.getContext
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+import java.util.Date
 
 class MainActivity : AppCompatActivity() {
 
@@ -72,26 +76,42 @@ class MainActivity : AppCompatActivity() {
         val done_btn = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.btnDone)
         val calendarView = findViewById<CalendarView>(R.id.calendarView)
 
+        var dateIsPicked: Boolean = false
+
         // CALENDAR REWORK
         calendarView.setOnDateChangeListener{calendarView, year, month, dayOfMonth ->
-            val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
-            val editor = sharedPreferences.edit()
-            editor.putInt("day", dayOfMonth)
-            editor.putInt("month", month)
-            editor.putInt("year", year)
-            editor.apply()
+            val from = LocalDate.of(year.toInt(), month.toInt() + 1, dayOfMonth.toInt())
+            val to = LocalDate.now()
+            val dayInterwal = ChronoUnit.DAYS.between(from, to)
+            val days = dayInterwal.toInt()
+
+            if (days >= 0) {
+                val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putInt("day", dayOfMonth)
+                editor.putInt("month", month)
+                editor.putInt("year", year)
+                editor.apply()
+                dateIsPicked = true
+            }
+            else {
+                dateIsPicked = false
+            }
+
         }
 
         // DONE BUTTON HANDLING
         done_btn.setOnClickListener {
-            val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
-            val editor = sharedPreferences.edit()
-            editor.putBoolean("isReady", true)
-            editor.apply()
+            if (dateIsPicked) {
+                val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putBoolean("isReady", true)
+                editor.apply()
 
-            val intent = Intent(this@MainActivity, CounterActivity::class.java)
-            startActivity(intent)
-            finish()
+                val intent = Intent(this@MainActivity, CounterActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
     }
 }
