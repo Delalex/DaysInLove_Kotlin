@@ -16,6 +16,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import java.time.LocalDate
+import java.time.Period
 import java.time.temporal.ChronoUnit
 
 class CounterActivity : AppCompatActivity() {
@@ -83,10 +84,11 @@ class CounterActivity : AppCompatActivity() {
         val start_year = sharedPreferences.getInt("year", 0) // default value is 0 if "year" is not found
 
         // ПОДСЧЕТ
-        val from = LocalDate.of(start_year.toInt(), start_month.toInt() + 1, start_day.toInt())
-        val to = LocalDate.now()
-        val dayInterval = ChronoUnit.DAYS.between(from, to)
-        val days = dayInterval.toInt()
+        val date1 = LocalDate.of(2020, 10, 17)
+        //val date2 = LocalDate.of(2024, 12, 23)
+        val date2 = LocalDate.now()
+
+        val days = ChronoUnit.DAYS.between(date1, date2).toInt()
 
         labelDatesWidget.text = start_day.toString().padStart(2, '0') + '.' + (start_month + 1).toString().padStart(2, '0') + '.' + start_year.toString() + " - " + Funcer.getDateString()
         labelDaysTogetherWidget.text = days.toString()
