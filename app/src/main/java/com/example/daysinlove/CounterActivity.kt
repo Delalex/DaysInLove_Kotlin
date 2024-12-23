@@ -85,7 +85,6 @@ class CounterActivity : AppCompatActivity() {
 
         // ПОДСЧЕТ
         val date1 = LocalDate.of(2020, 10, 17)
-        //val date2 = LocalDate.of(2024, 12, 23)
         val date2 = LocalDate.now()
 
         val days = ChronoUnit.DAYS.between(date1, date2).toInt()

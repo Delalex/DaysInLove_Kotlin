@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
         // CALENDAR REWORK
         calendarView.setOnDateChangeListener{calendarView, year, month, dayOfMonth ->
-            val from = LocalDate.of(year.toInt(), month.toInt() + 1, dayOfMonth.toInt())
+            val from = LocalDate.of(year.toInt(), month.toInt() + 1, dayOfMonth.toInt() + 1)
             val to = LocalDate.now()
             val dayInterwal = ChronoUnit.DAYS.between(from, to)
             val days = dayInterwal.toInt()
