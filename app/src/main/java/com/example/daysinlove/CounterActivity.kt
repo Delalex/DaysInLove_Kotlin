@@ -3,7 +3,6 @@ package com.example.daysinlove
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -15,9 +14,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import ru.rustore.sdk.appupdate.manager.factory.RuStoreAppUpdateManagerFactory
 import java.time.LocalDate
-import java.time.Period
 import java.time.temporal.ChronoUnit
+import com.example.daysinlove.RuStoreUpdates as RuStoreUpdates
 
 class CounterActivity : AppCompatActivity() {
     override fun onBackPressed() {
@@ -54,6 +54,7 @@ class CounterActivity : AppCompatActivity() {
         }
         // ON READY
 
+
         // HIDE NAV BAR
         @RequiresApi(Build.VERSION_CODES.R)
         fun hideSystemUI() {
@@ -70,6 +71,10 @@ class CounterActivity : AppCompatActivity() {
         }
         hideSystemUI()
 
+        // РАБОТА С ОБНОВЛЕНИЯМИ
+        RuStoreUpdates.check_updates(this)
+
+
         // list all widgets
         val labelDatesWidget = findViewById<TextView>(R.id.labelDates)
         val labelDaysTogetherWidget = findViewById<TextView>(R.id.labelDaysTogether)
@@ -79,17 +84,23 @@ class CounterActivity : AppCompatActivity() {
         // DATE WORK
         val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
 
-        val start_day = sharedPreferences.getInt("day", 0) // default value is 0 if "day" is not found
-        val start_month = sharedPreferences.getInt("month", 0) // default value is 0 if "month" is not found
-        val start_year = sharedPreferences.getInt("year", 0) // default value is 0 if "year" is not found
+        val startDay = sharedPreferences.getInt("day", 17) // default value is 0 if "day" is not found
+        val startMonth = sharedPreferences.getInt("month", 10) // default value is 0 if "month" is not found
+        val startYear = sharedPreferences.getInt("year", 2020) // default value is 0 if "year" is not found
 
         // ПОДСЧЕТ
-        val date1 = LocalDate.of(2020, 10, 17)
+        val date1 = LocalDate.of(startYear.toInt(), startMonth.toInt() + 1, startDay.toInt())
         val date2 = LocalDate.now()
 
         val days = ChronoUnit.DAYS.between(date1, date2).toInt()
 
-        labelDatesWidget.text = start_day.toString().padStart(2, '0') + '.' + (start_month + 1).toString().padStart(2, '0') + '.' + start_year.toString() + " - " + Funcer.getDateString()
+        labelDatesWidget.text = String.format(
+            "%02d.%02d.%d - %s",
+            startDay,
+            startMonth + 1,
+            startYear,
+            Funcer.getDateString()
+        )
         labelDaysTogetherWidget.text = days.toString()
 
         // CHECK BEAUTINESS

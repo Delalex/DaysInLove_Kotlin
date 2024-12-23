@@ -19,8 +19,8 @@ android {
         applicationId = "com.delalex.daysinlove"
         minSdk = 24
         targetSdk = 33
-        versionCode = 6
-        versionName = "3.0"
+        versionCode = 7
+        versionName = "3.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(platform("ru.rustore.sdk:bom:7.0.0"))
+    implementation("ru.rustore.sdk:appupdate")
+    implementation("com.yandex.android:mobileads:7.8.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
