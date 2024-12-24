@@ -14,15 +14,15 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.yandex.mobile.ads.banner.BannerAdSize
+import com.yandex.mobile.ads.banner.BannerAdView
 import ru.rustore.sdk.appupdate.manager.factory.RuStoreAppUpdateManagerFactory
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import kotlin.collections.EmptyMap.get
 import com.example.daysinlove.RuStoreUpdates as RuStoreUpdates
 
 class CounterActivity : AppCompatActivity() {
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
 
     override fun onResume() {
         super.onResume()
@@ -43,7 +43,7 @@ class CounterActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?): BannerAdSize {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -73,6 +73,20 @@ class CounterActivity : AppCompatActivity() {
 
         // РАБОТА С ОБНОВЛЕНИЯМИ
         RuStoreUpdates.check_updates(this)
+
+        // ЗАГРУЗКА РЕКЛАМЫ
+        val adview = findViewById<ImageView>(R.id.ad_container_view)
+        fun setAdSize(): BannerAdSize {
+            // Calculate the width of the ad, taking into account the padding in the ad container.
+            var adWidthPixels = findViewById<BannerAdView>(R.id.ad_container_view).width
+            if (adWidthPixels == 0) {
+                // If the ad hasn't been laid out, default to the full screen width
+                adWidthPixels = resources.displayMetrics.widthPixels
+            }
+            val adWidth = (adWidthPixels / resources.displayMetrics.density).toInt()
+            return BannerAdSize.stickySize(this, adWidth)
+        }
+
 
 
         // list all widgets

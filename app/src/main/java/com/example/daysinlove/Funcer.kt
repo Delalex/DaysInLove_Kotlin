@@ -3,6 +3,7 @@ package com.example.daysinlove
 import android.os.Build
 import androidx.annotation.RequiresApi
 import android.content.Context.MODE_PRIVATE
+import com.yandex.mobile.ads.banner.BannerAdSize
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -34,6 +35,5 @@ class Funcer {
             val currentDate = data_format.format(Date())
             return currentDate.toString()
         }
-
     }
 }
