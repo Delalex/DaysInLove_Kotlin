@@ -91,7 +91,7 @@ class CounterActivity : AppCompatActivity() {
         hideSystemUI()
 
         // РАБОТА С ОБНОВЛЕНИЯМИ
-        RuStoreUpdates.check_updates(this)
+        RuStoreUpdates.checkForUpdates(this)
 
         // list all widgets
         val labelDatesWidget = binding.labelDates
