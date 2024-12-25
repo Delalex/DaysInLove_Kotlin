@@ -1,9 +1,14 @@
+import org.jetbrains.kotlin.storage.CacheResetOnProcessCanceled.enabled
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
+    buildFeatures {
+        viewBinding = true
+    }
     signingConfigs {
         getByName("debug") {
             storeFile = file("C:\\Users\\teamd\\Desktop\\Кодинг\\Ключи\\delalex.keystore")
@@ -19,8 +24,8 @@ android {
         applicationId = "com.delalex.daysinlove"
         minSdk = 24
         targetSdk = 33
-        versionCode = 7
-        versionName = "3.5"
+        versionCode = 8
+        versionName = "4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -3,8 +3,7 @@ package com.example.daysinlove
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -14,15 +13,30 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.example.daysinlove.databinding.ActivityMainBinding
+import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.banner.BannerAdView
-import ru.rustore.sdk.appupdate.manager.factory.RuStoreAppUpdateManagerFactory
+import com.yandex.mobile.ads.common.AdRequest
+import com.yandex.mobile.ads.common.AdRequestError
+import com.yandex.mobile.ads.common.ImpressionData
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import kotlin.collections.EmptyMap.get
 import com.example.daysinlove.RuStoreUpdates as RuStoreUpdates
 
 class CounterActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+    private var bannerAd: BannerAdView? = null
+    private val adSize: BannerAdSize
+        get() {
+            var adWidthPixels = binding.adContainerView.width
+            if (adWidthPixels == 0) {
+                // If the ad hasn't been laid out, default to the full screen width
+                adWidthPixels = resources.displayMetrics.widthPixels
+            }
+            val adWidth = (adWidthPixels / resources.displayMetrics.density).toInt()
+            return BannerAdSize.stickySize(this, adWidth)
+        }
 
     override fun onResume() {
         super.onResume()
@@ -33,9 +47,6 @@ class CounterActivity : AppCompatActivity() {
                 window.decorView.findViewById(android.R.id.content)).let { controller ->
                 controller.hide(WindowInsetsCompat.Type.systemBars())
 
-                // When the screen is swiped up at the bottom
-                // of the application, the navigationBar shall
-                // appear for some time
                 controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         }
@@ -43,17 +54,25 @@ class CounterActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCreate(savedInstanceState: Bundle?): BannerAdSize {
+    override fun onCreate(savedInstanceState: Bundle?): Unit {
+        binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        binding.adContainerView.viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                binding.adContainerView.viewTreeObserver.removeOnGlobalLayoutListener(this);
+                bannerAd = loadBannerAd(adSize)
+                //Toast.makeText(this@CounterActivity, "Loading", Toast.LENGTH_SHORT).show()
+            }
+        })
         // ON READY
-
 
         // HIDE NAV BAR
         @RequiresApi(Build.VERSION_CODES.R)
@@ -74,26 +93,11 @@ class CounterActivity : AppCompatActivity() {
         // РАБОТА С ОБНОВЛЕНИЯМИ
         RuStoreUpdates.check_updates(this)
 
-        // ЗАГРУЗКА РЕКЛАМЫ
-        val adview = findViewById<ImageView>(R.id.ad_container_view)
-        fun setAdSize(): BannerAdSize {
-            // Calculate the width of the ad, taking into account the padding in the ad container.
-            var adWidthPixels = findViewById<BannerAdView>(R.id.ad_container_view).width
-            if (adWidthPixels == 0) {
-                // If the ad hasn't been laid out, default to the full screen width
-                adWidthPixels = resources.displayMetrics.widthPixels
-            }
-            val adWidth = (adWidthPixels / resources.displayMetrics.density).toInt()
-            return BannerAdSize.stickySize(this, adWidth)
-        }
-
-
-
         // list all widgets
-        val labelDatesWidget = findViewById<TextView>(R.id.labelDates)
-        val labelDaysTogetherWidget = findViewById<TextView>(R.id.labelDaysTogether)
-        val calendarImageView = findViewById<ImageView>(R.id.calendar)
-        val share_btn = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.btnShare)
+        val labelDatesWidget = binding.labelDates
+        val labelDaysTogetherWidget = binding.labelDaysTogether
+        val calendarImageView = binding.calendar
+        val share_btn = binding.btnShare
 
         // DATE WORK
         val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
@@ -136,4 +140,43 @@ class CounterActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(intent, "Поделиться через:"))
         }
     }
+
+    private fun loadBannerAd(adSize: BannerAdSize): BannerAdView {
+        return binding.adContainerView.apply {
+            setAdSize(adSize)
+            setAdUnitId("R-M-13447466-1")
+            setBannerAdEventListener(object : BannerAdEventListener {
+                override fun onAdLoaded() {
+                    // If this callback occurs after the activity is destroyed, you
+                    // must call destroy and return or you may get a memory leak.
+                    // Note `isDestroyed` is a method on Activity.
+                    if (isDestroyed) {
+                        bannerAd?.destroy()
+                        return
+                    }
+                }
+
+                override fun onAdFailedToLoad(error: AdRequestError) {
+                }
+
+                override fun onAdClicked() {
+                }
+
+                override fun onLeftApplication() {
+                }
+
+                override fun onReturnedToApplication() {
+                }
+
+                override fun onImpression(impressionData: ImpressionData?) {
+                }
+            })
+            loadAd(
+                AdRequest.Builder()
+                    // Methods in the AdRequest.Builder class can be used here to specify individual options settings.
+                    .build()
+            )
+        }
+    }
+
 }
