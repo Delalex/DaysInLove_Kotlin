@@ -71,7 +71,8 @@ class CounterActivity : AppCompatActivity() {
                 //Toast.makeText(this@CounterActivity, "Loading", Toast.LENGTH_SHORT).show()
             }
         })
-        // ON READY
+        // ON READY - just dildo commit
+        // biba
 
         // HIDE NAV BAR
         @RequiresApi(Build.VERSION_CODES.R)
