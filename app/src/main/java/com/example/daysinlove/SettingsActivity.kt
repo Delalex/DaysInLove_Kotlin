@@ -1,24 +1,17 @@
 package com.example.daysinlove
 
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.CalendarView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.transition.Visibility
-import java.security.AccessController.getContext
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.util.Date
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_settings)
+        setContentView(R.layout.activity_startup)
 
         val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
         val isAuthed = sharedPreferences.getBoolean("isReady", false)

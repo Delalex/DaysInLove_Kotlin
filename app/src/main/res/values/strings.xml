@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">DaysInLove</string>
+    <string name="err">ERR</string>
+    <string name="_17_10_2020_err_no_date">17.10.2020 - ERR_NO_DATE</string>
+    <string name="settings">Настройки</string>
+    <string name="calendar">Calendar</string>
+    <string name="share">Share</string>
 </resources>

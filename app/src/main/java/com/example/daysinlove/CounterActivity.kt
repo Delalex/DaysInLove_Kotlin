@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewTreeObserver
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -124,6 +125,10 @@ class CounterActivity : AppCompatActivity() {
         // CHECK BEAUTINESS
         if (Funcer.isBeautifulNumber(days)) {
             val drawable = ContextCompat.getDrawable(this, R.drawable.calendar_cool)
+            calendarImageView.setImageDrawable(drawable)
+        }
+        else {
+            val drawable = ContextCompat.getDrawable(this, R.drawable.calendar)
             calendarImageView.setImageDrawable(drawable)
         }
 
