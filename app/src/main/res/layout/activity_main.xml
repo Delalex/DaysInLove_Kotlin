@@ -18,6 +18,7 @@
         tools:layout_editor_absoluteX="0dp" />
 
     <ImageView
+        android:visibility="visible"
         android:id="@+id/calendar"
         android:layout_width="250dp"
         android:layout_height="250dp"
@@ -73,6 +74,7 @@
         android:focusable="true"
         android:src="@drawable/ic_share"
         app:backgroundTint="#CDCAC5"
+        app:tint="@color/black"
         app:borderWidth="5dp"
         app:elevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

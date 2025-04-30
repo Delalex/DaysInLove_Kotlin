@@ -11,7 +11,7 @@ android {
     }
     signingConfigs {
         getByName("debug") {
-            storeFile = file("C:\\Users\\teamd\\Desktop\\Кодинг\\Ключи\\delalex.keystore")
+            storeFile = file("D:\\delalex.keystore")
             storePassword = "p377033122"
             keyAlias = "Delalex"
             keyPassword = "p377033122"
