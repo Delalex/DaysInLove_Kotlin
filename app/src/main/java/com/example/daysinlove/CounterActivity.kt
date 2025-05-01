@@ -1,6 +1,6 @@
 package com.example.daysinlove
 
-import com.example.daysinlove.Funcer
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -38,6 +38,10 @@ class CounterActivity : AppCompatActivity() {
             return BannerAdSize.stickySize(this, adWidth)
         }
 
+    override fun onStart() {
+        super.onStart()
+    }
+
     override fun onResume() {
         super.onResume()
         @RequiresApi(Build.VERSION_CODES.R)
@@ -53,7 +57,7 @@ class CounterActivity : AppCompatActivity() {
         hideSystemUI()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("DefaultLocale")
     override fun onCreate(savedInstanceState: Bundle?): Unit {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
@@ -78,24 +82,11 @@ class CounterActivity : AppCompatActivity() {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1)
         }
 
-        // Запуск сервиса
-        val serviceIntent = Intent(this, ForegroundService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
+        // Запуск сервисa
+        ForegroundService.startService(this)
 
         // HIDE NAV BAR
-        @RequiresApi(Build.VERSION_CODES.R)
-        fun hideSystemUI() {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            WindowInsetsControllerCompat(window,
-                window.decorView.findViewById(android.R.id.content)).let { controller ->
-                controller.hide(WindowInsetsCompat.Type.systemBars())
-                controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        }
+
         hideSystemUI()
 
         // РАБОТА С ОБНОВЛЕНИЯМИ
@@ -105,7 +96,7 @@ class CounterActivity : AppCompatActivity() {
         val labelDatesWidget = binding.labelDates
         val labelDaysTogetherWidget = binding.labelDaysTogether
         val calendarImageView = binding.calendar
-        val share_btn = binding.btnShare
+        val shareBtn = binding.btnShare
 
         // DATE WORK
         val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
@@ -136,7 +127,7 @@ class CounterActivity : AppCompatActivity() {
         }
 
         // SHARING
-        share_btn.setOnClickListener {
+        shareBtn.setOnClickListener {
             val intent = Intent.createChooser(intent, "Поделиться через:")
 
             intent.action = Intent.ACTION_SEND
@@ -146,6 +137,15 @@ class CounterActivity : AppCompatActivity() {
             )
             intent.type = "text/plain"
             startActivity(Intent.createChooser(intent, "Поделиться через:"))
+        }
+    }
+
+    private fun hideSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window,
+            window.decorView.findViewById(android.R.id.content)).let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
