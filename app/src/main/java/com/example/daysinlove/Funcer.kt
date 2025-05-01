@@ -1,16 +1,32 @@
 package com.example.daysinlove
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import android.content.Context.MODE_PRIVATE
-import com.yandex.mobile.ads.banner.BannerAdSize
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.Calendar
 import java.util.Date
 
 class Funcer {
     companion object {
+        // Add context parameter to the function
+        fun getDaysTogether(context: Context): Int {
+            val sharedPreferences = context.getSharedPreferences("storage", Context.MODE_PRIVATE)
+            val startDay = sharedPreferences.getInt("day", 17)
+            val startMonth = sharedPreferences.getInt("month", 10)
+            val startYear = sharedPreferences.getInt("year", 2020)
+
+            val calendarStart = Calendar.getInstance().apply {
+                set(startYear, startMonth, startDay)
+            }
+            val calendarEnd = Calendar.getInstance()
+
+            val diffMillis = calendarEnd.timeInMillis - calendarStart.timeInMillis
+            return (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+        }
+
         fun isBeautifulNumber(n: Int): Boolean {
             val str = n.toString()
 

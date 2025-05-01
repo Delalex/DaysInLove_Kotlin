@@ -1,5 +1,6 @@
 package com.example.daysinlove
 
+import com.example.daysinlove.Funcer
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -92,10 +93,6 @@ class CounterActivity : AppCompatActivity() {
             WindowInsetsControllerCompat(window,
                 window.decorView.findViewById(android.R.id.content)).let { controller ->
                 controller.hide(WindowInsetsCompat.Type.systemBars())
-
-                // When the screen is swiped up at the bottom
-                // of the application, the navigationBar shall
-                // appear for some time
                 controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         }
@@ -117,11 +114,7 @@ class CounterActivity : AppCompatActivity() {
         val startMonth = sharedPreferences.getInt("month", 10) // default value is 0 if "month" is not found
         val startYear = sharedPreferences.getInt("year", 2020) // default value is 0 if "year" is not found
 
-        // ПОДСЧЕТ
-        val date1 = LocalDate.of(startYear.toInt(), startMonth.toInt() + 1, startDay.toInt())
-        val date2 = LocalDate.now()
-
-        val days = ChronoUnit.DAYS.between(date1, date2).toInt()
+        val days = Funcer.getDaysTogether(this)
 
         labelDatesWidget.text = String.format(
             "%02d.%02d.%d - %s",

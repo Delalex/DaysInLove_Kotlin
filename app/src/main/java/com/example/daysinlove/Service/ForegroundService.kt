@@ -84,7 +84,7 @@ class ForegroundService : Service() {
     private fun createNotification(): Notification {
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("ДниВЛюбви")
-            .setContentText("Прошло секунд: $secondsCount")
+            .setContentText("Дней вместе: $secondsCount")
             .setSmallIcon(R.drawable.ic_heart)
             .setOnlyAlertOnce(true)
             .setOngoing(true) // Несмахиваемое
