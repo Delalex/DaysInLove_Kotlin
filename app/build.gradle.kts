@@ -57,8 +57,10 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(platform("ru.rustore.sdk:bom:7.0.0"))
     implementation("ru.rustore.sdk:appupdate")
-    implementation("com.yandex.android:mobileads:7.8.0")
+    implementation("com.yandex.android:mobileads:7.12.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.core:core-ktx:1.13.1")
 }

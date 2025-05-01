@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewTreeObserver
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -58,6 +57,7 @@ class CounterActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        startNotificationService()
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -69,11 +69,21 @@ class CounterActivity : AppCompatActivity() {
             override fun onGlobalLayout() {
                 binding.adContainerView.viewTreeObserver.removeOnGlobalLayoutListener(this);
                 bannerAd = loadBannerAd(adSize)
-                //Toast.makeText(this@CounterActivity, "Loading", Toast.LENGTH_SHORT).show()
             }
         })
         // ON READY - just dildo commit
-        // biba
+        // Выдача разрешений
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1)
+        }
+
+        // Запуск сервиса
+        val serviceIntent = Intent(this, ForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
 
         // HIDE NAV BAR
         @RequiresApi(Build.VERSION_CODES.R)
@@ -143,6 +153,16 @@ class CounterActivity : AppCompatActivity() {
             )
             intent.type = "text/plain"
             startActivity(Intent.createChooser(intent, "Поделиться через:"))
+        }
+    }
+
+    // ЗАПУСК СЕРВИСА УВЕДОМЛЕНИЙ
+    private fun startNotificationService() {
+        val serviceIntent = Intent(this, ForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
         }
     }
 
