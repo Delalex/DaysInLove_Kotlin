@@ -27,7 +27,7 @@
         android:fontFamily="@font/aoboshi_one"
         android:gravity="center"
         android:text="Выберите дату начала отношений"
-        android:textColor="#000000"
+        android:textColor="@color/text_primary"
         android:textSize="18dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/calendarView"
@@ -45,8 +45,29 @@
         android:layout_marginBottom="16dp"
         android:clickable="true"
         android:contentDescription="Done"
+        app:srcCompat="@drawable/ic_done"
         app:backgroundTint="#CDCAC5"
+        app:tint="@color/black"
+        app:borderWidth="5dp"
+        app:elevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_primary"
+        android:id="@+id/editTextDate"
+        android:layout_width="184dp"
+        android:layout_height="86dp"
+        android:ems="10"
+        android:gravity="center_horizontal|center_vertical"
+        android:hint="31.12.2025"
+        android:inputType="date"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_done" />
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/calendarView"
+        app:layout_constraintVertical_bias="0.167" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.text.SimpleDateFormat
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Calendar
@@ -15,16 +16,19 @@ class Funcer {
         fun getDaysTogether(context: Context): Int {
             val sharedPreferences = context.getSharedPreferences("storage", Context.MODE_PRIVATE)
             val startDay = sharedPreferences.getInt("day", 17)
-            val startMonth = sharedPreferences.getInt("month", 10)
+            val startMonth = sharedPreferences.getInt("month", 9) // 0-11 (октябрь)
             val startYear = sharedPreferences.getInt("year", 2020)
 
-            val calendarStart = Calendar.getInstance().apply {
-                set(startYear, startMonth, startDay)
+            return try {
+                // Правильный порядок: year, month, day
+                val startDate = LocalDate.of(startYear, startMonth, startDay)
+                val endDate = LocalDate.now()
+                ChronoUnit.DAYS.between(startDate, endDate).toInt()
+            } catch (e: DateTimeException) {
+                // Если дата невалидна, возвращаем дни с даты по умолчанию
+                val defaultDate = LocalDate.of(2020, 10, 17) // 17 октября 2020
+                ChronoUnit.DAYS.between(defaultDate, LocalDate.now()).toInt()
             }
-            val calendarEnd = Calendar.getInstance()
-
-            val diffMillis = calendarEnd.timeInMillis - calendarStart.timeInMillis
-            return (diffMillis / (1000 * 60 * 60 * 24)).toInt()
         }
 
         fun isBeautifulNumber(n: Int): Boolean {

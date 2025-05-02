@@ -22,11 +22,17 @@ import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import android.Manifest
+import com.example.daysinlove.Funcer.Companion.getDateString
+import com.example.daysinlove.Funcer.Companion.getDaysTogether
+import java.time.DateTimeException
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import com.example.daysinlove.RuStoreUpdates as RuStoreUpdates
 
 class CounterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var bannerAd: BannerAdView? = null
+    private var days: Int = 0
     private val adSize: BannerAdSize
         get() {
             var adWidthPixels = binding.adContainerView.width
@@ -65,7 +71,6 @@ class CounterActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        @RequiresApi(Build.VERSION_CODES.R)
         fun hideSystemUI() {
             WindowCompat.setDecorFitsSystemWindows(window, false)
             WindowInsetsControllerCompat(window,
@@ -114,22 +119,23 @@ class CounterActivity : AppCompatActivity() {
         // DATE WORK
         val sharedPreferences = getSharedPreferences("storage", MODE_PRIVATE)
 
-        val startDay = sharedPreferences.getInt("day", 17) // default value is 0 if "day" is not found
-        val startMonth = sharedPreferences.getInt("month", 10) // default value is 0 if "month" is not found
-        val startYear = sharedPreferences.getInt("year", 2020) // default value is 0 if "year" is not found
+        val startDay = sharedPreferences.getInt("day", 17)
+        val startMonth = sharedPreferences.getInt("month", 9) // 0-11 (октябрь)
+        val startYear = sharedPreferences.getInt("year", 2020)
 
-        val days = Funcer.getDaysTogether(this)
+        days = getDaysTogether(this)
 
         labelDatesWidget.text = String.format(
             "%02d.%02d.%d - %s",
             startDay,
-            startMonth + 1,
+            startMonth, // Для отображения 1-12
             startYear,
-            Funcer.getDateString()
+            getDateString()
         )
         labelDaysTogetherWidget.text = days.toString()
 
         // CHECK BEAUTINESS
+
         if (Funcer.isBeautifulNumber(days)) {
             val drawable = ContextCompat.getDrawable(this, R.drawable.calendar_cool)
             calendarImageView.setImageDrawable(drawable)
