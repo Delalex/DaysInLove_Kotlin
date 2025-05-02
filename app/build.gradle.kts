@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId = "com.delalex.daysinlove"
         minSdk = 29
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 9
         versionName = "4.5"
 

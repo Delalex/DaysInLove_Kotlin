@@ -1,67 +1,81 @@
 package com.example.daysinlove
 
-import android.app.AlarmManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.os.IBinder
-import android.os.SystemClock
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import java.util.Calendar
-import com.example.daysinlove.Funcer
-import com.example.daysinlove.R
+import java.util.*
 
 class ForegroundService : Service() {
     private val channelId = "DaysInLoveServiceChannel"
     private lateinit var notificationManager: NotificationManager
     private var daysCount = 0
     private var alarmManager: AlarmManager? = null
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    // Двойной механизм перезапуска (AlarmManager + BroadcastReceiver)
+    private var restartPendingIntent: PendingIntent? = null
     private var dailyUpdatePendingIntent: PendingIntent? = null
         private set // Запрещаем внешнее изменение
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val notificationCheckRunnable = object : Runnable {
+        override fun run() {
+            ensureNotificationActive()
+            handler.postDelayed(this, 5000) // Проверка каждые 5 секунд
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
-
-
 
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        acquireWakeLock()
         createNotificationChannel()
         setupDailyUpdate()
+        startNotificationChecker()
         Log.d("ForegroundService", "Service onCreate()")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("ForegroundService", "Service onStartCommand()")
+        Log.d("ForegroundService", "Service onStartCommand() with action: ${intent?.action}")
         when (intent?.action) {
-            ACTION_START -> startService()
-            ACTION_STOP -> stopService()
+            ACTION_START -> startForegroundService()
+            ACTION_STOP -> stopForegroundService()
             ACTION_UPDATE -> updateDaysCount()
-            else -> startService() // Всегда запускаем, если action не указан
+            else -> startForegroundService() // По умолчанию запускаем
         }
-        return START_STICKY
+        return START_STICKY // Важно для автоматического перезапуска
     }
 
-    private fun startService() {
+    private fun acquireWakeLock() {
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "DaysInLove::WakeLock"
+        ).apply {
+            acquire(10*60*1000L /*10 minutes*/)
+        }
+    }
+
+    private fun startForegroundService() {
         updateDaysCount()
         startForeground(NOTIFICATION_ID, createNotification())
+        setupAutoRestart()
     }
 
-    private fun stopService() {
+    private fun stopForegroundService() {
+        stopNotificationChecker()
+        releaseWakeLock()
         stopForeground(true)
         stopSelf()
+        cancelAutoRestart()
         cancelDailyUpdate()
-    }
-
-    private fun isRunning(): Boolean {
-        return daysCount > 0
     }
 
     private fun updateDaysCount() {
@@ -78,14 +92,14 @@ class ForegroundService : Service() {
         }
 
         // Создаем новый PendingIntent
-        val pendingIntent = PendingIntent.getService(
+        dailyUpdatePendingIntent = PendingIntent.getService(
             this,
-            0,
+            DAILY_UPDATE_REQUEST_CODE,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Устанавливаем ежедневное обновление в 00:00
+        // Устанавливаем ежедневное обновление
         val calendar = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
             add(Calendar.DAY_OF_YEAR, 1)
@@ -95,23 +109,68 @@ class ForegroundService : Service() {
             set(Calendar.MILLISECOND, 0)
         }
 
-        alarmManager?.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
-            pendingIntent
-        )
+        // Используем локальную копию для thread-safety
+        val pi = dailyUpdatePendingIntent
+        if (pi != null) {
+            alarmManager?.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                AlarmManager.INTERVAL_DAY,
+                pi
+            )
+        }
+    }
 
-        // Сохраняем ссылку
-        dailyUpdatePendingIntent = pendingIntent
+    private fun setupAutoRestart() {
+        cancelAutoRestart()
+
+        val restartIntent = Intent(this, RestartReceiver::class.java).apply {
+            action = ACTION_RESTART
+        }
+
+        restartPendingIntent = PendingIntent.getBroadcast(
+            this,
+            RESTART_REQUEST_CODE,
+            restartIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun cancelAutoRestart() {
+        restartPendingIntent?.let {
+            alarmManager?.cancel(it)
+            restartPendingIntent = null
+        }
     }
 
     private fun cancelDailyUpdate() {
-        // Создаем локальную копию для thread-safety
-        val pendingIntent = dailyUpdatePendingIntent
-        if (pendingIntent != null) {
-            alarmManager?.cancel(pendingIntent)
+        dailyUpdatePendingIntent?.let {
+            alarmManager?.cancel(it)
             dailyUpdatePendingIntent = null
+        }
+    }
+
+    private fun startNotificationChecker() {
+        handler.post(notificationCheckRunnable)
+    }
+
+    private fun stopNotificationChecker() {
+        handler.removeCallbacks(notificationCheckRunnable)
+    }
+
+    private fun ensureNotificationActive() {
+        if (!isNotificationActive()) {
+            Log.w("ForegroundService", "Notification was removed, restarting...")
+            startForeground(NOTIFICATION_ID, createNotification())
+        }
+    }
+
+    private fun isNotificationActive(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            notificationManager.activeNotifications.any { it.id == NOTIFICATION_ID }
+        } else {
+            // Для старых версий Android нет надежного способа проверить
+            true
         }
     }
 
@@ -120,9 +179,11 @@ class ForegroundService : Service() {
             val channel = NotificationChannel(
                 channelId,
                 "ДниВЛюбви",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_MIN
             ).apply {
                 description = "Показывает количество дней вместе"
+                setShowBadge(false)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -133,61 +194,81 @@ class ForegroundService : Service() {
             .setContentTitle("ДниВЛюбви")
             .setContentText("Дней вместе: $daysCount")
             .setSmallIcon(R.drawable.ic_heart)
-            .setOnlyAlertOnce(true)
             .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_MIN) // MIN чтобы не беспокоить пользователя
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setOnlyAlertOnce(true)
             .setShowWhen(false)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .addAction(
-                R.drawable.ic_heart,
-                "Остановить",
-                PendingIntent.getService(
-                    this,
-                    0,
-                    Intent(this, ForegroundService::class.java).apply {
-                        action = ACTION_STOP
-                    },
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-            )
-            .build()
+            .setAutoCancel(false)
+            .setDeleteIntent(createDeleteIntent())
+            .build().apply {
+                flags = flags or Notification.FLAG_NO_CLEAR or Notification.FLAG_FOREGROUND_SERVICE
+            }
+    }
+
+    private fun createDeleteIntent(): PendingIntent {
+        val intent = Intent(this, ForegroundService::class.java).apply {
+            action = ACTION_START
+        }
+        return PendingIntent.getService(
+            this,
+            DELETE_INTENT_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     private fun updateNotification() {
-        val notification = createNotification()
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        notificationManager.notify(NOTIFICATION_ID, createNotification())
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+            }
+            wakeLock = null
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cancelDailyUpdate()
+        Log.d("ForegroundService", "Service onDestroy()")
+        // Планируем перезапуск при уничтожении сервиса
+        scheduleRestart()
+        stopNotificationChecker()
+        releaseWakeLock()
     }
 
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        val restartServiceIntent = Intent(applicationContext, ForegroundService::class.java).apply {
-            action = ACTION_START
+    private fun scheduleRestart() {
+        val restartIntent = Intent(this, RestartReceiver::class.java).apply {
+            action = ACTION_RESTART
         }
-
-        val restartServicePendingIntent = PendingIntent.getService(
+        val restartPendingIntent = PendingIntent.getBroadcast(
             this,
-            1,
-            restartServiceIntent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            RESTART_REQUEST_CODE,
+            restartIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         alarmManager?.set(
-            AlarmManager.ELAPSED_REALTIME,
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + 1000,
-            restartServicePendingIntent
+            restartPendingIntent
         )
-
-        super.onTaskRemoved(rootIntent)
     }
 
     companion object {
-        const val NOTIFICATION_ID = 123
+        const val NOTIFICATION_ID = 12345 // Уникальный ID
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"
         const val ACTION_UPDATE = "ACTION_UPDATE"
+        const val ACTION_RESTART = "ACTION_RESTART"
+
+        private const val RESTART_REQUEST_CODE = 1001
+        private const val DAILY_UPDATE_REQUEST_CODE = 1002
+        private const val DELETE_INTENT_REQUEST_CODE = 1003
 
         fun startService(context: Context) {
             val intent = Intent(context, ForegroundService::class.java).apply {
@@ -205,7 +286,16 @@ class ForegroundService : Service() {
             val intent = Intent(context, ForegroundService::class.java).apply {
                 action = ACTION_STOP
             }
-            context.stopService(intent)
+            context.startService(intent) // Используем startService для гарантированного выполнения
+        }
+    }
+}
+
+class RestartReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ForegroundService.ACTION_RESTART) {
+            Log.d("RestartReceiver", "Restarting service...")
+            ForegroundService.startService(context)
         }
     }
 }

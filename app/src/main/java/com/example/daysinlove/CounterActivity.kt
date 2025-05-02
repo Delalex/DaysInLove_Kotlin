@@ -2,6 +2,7 @@ package com.example.daysinlove
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewTreeObserver
@@ -20,8 +21,7 @@ import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import android.Manifest
 import com.example.daysinlove.RuStoreUpdates as RuStoreUpdates
 
 class CounterActivity : AppCompatActivity() {
@@ -40,6 +40,27 @@ class CounterActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+    }
+
+    private fun setupForegroundService() {
+        // В MainActivity.kt
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (checkSelfPermission(Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC), 1)
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+            }
+        }
+
+        // Запуск сервиса
+        ForegroundService.startService(this)
     }
 
     override fun onResume() {
@@ -62,7 +83,7 @@ class CounterActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        startNotificationService()
+        setupForegroundService()
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -77,14 +98,6 @@ class CounterActivity : AppCompatActivity() {
             }
         })
         // ON READY - just dildo commit
-        // Выдача разрешений
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1)
-        }
-
-        // Запуск сервисa
-        ForegroundService.startService(this)
-
         // HIDE NAV BAR
 
         hideSystemUI()
